@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MA SHANTI ONLINE CENTER</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #e1bee7);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #6200ea;
+      color: white;
+      padding: 15px 20px;
+      font-size: 28px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #user-name {
+      font-size: 18px;
+      color: #fff;
+    }
+    marquee {
+      background: #ff4081;
+      color: white;
+      font-weight: bold;
+      padding: 10px;
+      font-size: 18px;
+    }
+    .login-container, .dashboard {
+      margin-top: 40px;
+    }
+    button {
+      background: #6200ea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+      transition: transform 0.2s ease;
+    }
+    button:hover {
+      background: #3700b3;
+      transform: scale(1.05);
+    }
+    .services {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .service-btn {
+      background: #03a9f4;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .service-btn:hover {
+      transform: scale(1.1);
+      background: #0288d1;
+    }
+    #user-form {
+      display: none;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    input, select {
+      width: 90%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .user-card {
+      background: #fff;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>🌸 MA SHANTI ONLINE CENTER 🌸</div>
+    <div id="user-name"></div>
+  </header>
+
+  <marquee behavior="scroll" direction="left">
+    Government & Citizen Services • Aadhaar • e-District • Pension • FSSAI • e-Shram • e-Vahan • PAN • Legal Literacy
+  </marquee>
+
+  <div class="login-container" id="login-container">
+    <h2>स्वागत है! कृपया साइन इन करें</h2>
+    <button id="googleSignIn">Google से साइन इन करें</button>
+  </div>
+
+  <div id="user-form">
+    <h3>अपनी जानकारी दर्ज करें</h3>
+    <input type="text" id="name" placeholder="पूरा नाम" required />
+    <input type="text" id="mobile" placeholder="मोबाइल नंबर" required />
+    <select id="gender">
+      <option value="">लिंग चुनें</option>
+      <option value="Male">पुरुष</option>
+      <option value="Female">महिला</option>
+      <option value="Other">अन्य</option>
+    </select>
+    <button id="saveDetails">जानकारी सहेजें</button>
+  </div>
+
+  <div class="dashboard" id="dashboard" style="display:none;">
+    <div class="user-card" id="user-card"></div>
+    <h2>हमारी CSC सेवाएँ</h2>
+    <div class="services">
+      <div class="service-btn">Aadhaar</div>
+      <div class="service-btn">e-District</div>
+      <div class="service-btn">Pension</div>
+      <div class="service-btn">FSSAI</div>
+      <div class="service-btn">e-Shram</div>
+      <div class="service-btn">e-Vahan</div>
+      <div class="service-btn">PAN</div>
+      <div class="service-btn">Legal Literacy</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIcvxRGIOSGn1YUu6q6_xjKQt0kvxlHf8",
+      authDomain: "online-sarvice-12dc5.firebaseapp.com",
+      projectId: "online-sarvice-12dc5",
+      storageBucket: "online-sarvice-12dc5.firebasestorage.app",
+      messagingSenderId: "537058045361",
+      appId: "1:537058045361:web:d4b39f1466cc320af66190",
+      measurementId: "G-8KM3NBW8XN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    const googleSignInBtn = document.getElementById('googleSignIn');
+    const loginContainer = document.getElementById('login-container');
+    const userForm = document.getElementById('user-form');
+    const dashboard = document.getElementById('dashboard');
+    const saveDetailsBtn = document.getElementById('saveDetails');
+    const userNameDisplay = document.getElementById('user-name');
+    const userCard = document.getElementById('user-card');
+
+    let currentUser = null;
+
+    googleSignInBtn.addEventListener('click', async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        currentUser = user;
+
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          showDashboard(userDoc.data());
+        } else {
+          userForm.style.display = "block";
+          loginContainer.style.display = "none";
+        }
+      } catch (error) {
+        alert("त्रुटि: " + error.message);
+      }
+    });
+
+    saveDetailsBtn.addEventListener('click', async () => {
+      const name = document.getElementById('name').value.trim();
+      const mobile = document.getElementById('mobile').value.trim();
+      const gender = document.getElementById('gender').value;
+
+      if (!name || !mobile || !gender) {
+        alert("कृपया सभी फ़ील्ड भरें!");
+        return;
+      }
+
+      if (currentUser) {
+        await setDoc(doc(db, "users", currentUser.uid), { name, mobile, gender, email: currentUser.email });
+        showDashboard({ name, mobile, gender });
+      }
+    });
+
+    function showDashboard(data) {
+      userNameDisplay.innerHTML = `${data.name} <button id='signOutBtn'>साइन आउट</button>`;
+      userForm.style.display = "none";
+      dashboard.style.display = "block";
+      loginContainer.style.display = "none";
+      userCard.innerHTML = `<h3>यूज़र जानकारी</h3><p><b>नाम:</b> ${data.name}</p><p><b>मोबाइल:</b> ${data.mobile}</p><p><b>लिंग:</b> ${data.gender}</p>`;
+      document.getElementById('signOutBtn').addEventListener('click', userSignOut);
+    }
+
+    async function userSignOut() {
+      await signOut(auth);
+      currentUser = null;
+      userNameDisplay.textContent = '';
+      dashboard.style.display = 'none';
+      loginContainer.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
